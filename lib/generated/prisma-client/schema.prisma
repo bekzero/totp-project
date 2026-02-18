@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vaultProfile VaultProfile?
+  vaultItems   VaultItem[]
+}
+
+model VaultProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kdfSalt        String // base64 encoded
+  kdfIterations  Int // SQLite doesn't support defaults well
+  kdfVersion     Int      @default(1)
+  masterVerifier String // base64 encoded - derived value for password verification
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model VaultItem {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String // plaintext for listing/search
+  encryptedBlob String // base64 encoded AES-GCM ciphertext (JSON payload)
+  iv            String // base64 encoded IV
+  schemaVersion Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
