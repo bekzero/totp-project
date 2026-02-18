@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/lib/generated/prisma-client";
+import { PrismaClient, PrismaClientOptions } from "@/lib/generated/prisma-client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
 
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.PRISMA_DATABASE_URL;
 
-const prismaClientOptions = databaseUrl ? {
+const prismaClientOptions: PrismaClientOptions = databaseUrl ? {
   datasources: {
     db: {
       url: databaseUrl,
