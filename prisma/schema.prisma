@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("PRISMA_DATABASE_URL")
 }
 
@@ -25,7 +25,7 @@ model VaultProfile {
   userId          String   @unique
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   kdfSalt         String   // base64 encoded
-  kdfIterations   Int      // SQLite doesn't support defaults well
+  kdfIterations   Int      @default(310000)
   kdfVersion      Int      @default(1)
   masterVerifier  String   // base64 encoded - derived value for password verification
   createdAt       DateTime @default(now())
