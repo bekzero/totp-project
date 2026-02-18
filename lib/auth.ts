@@ -4,14 +4,23 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { createHash } from "crypto";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
 
+function getNextAuthSecret(): string {
+  if (process.env.NEXTAUTH_SECRET) {
+    return process.env.NEXTAUTH_SECRET;
+  }
+  const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+  return createHash("sha256").update(databaseUrl + "fallback-secret").digest("hex");
+}
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || "temp-fallback-secret-for-diagnosis-only",
+  secret: getNextAuthSecret(),
   session: {
     strategy: "jwt",
   },
